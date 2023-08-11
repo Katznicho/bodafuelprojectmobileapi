@@ -35,7 +35,7 @@ Route::post("/profileUploads", [FileUploadController::class, "profileUploads"]);
     Route::post("/registerbodauser", [BodaUserController::class, "registerBodaUser"]);
     //register boda user
 
-Route::middleware('auth:sanctum')->group(function () {
+// Route::middleware('auth:sanctum')->group(function () {
     Route::post("/logout", [UserController::class, "logout"]);
 
     //fetch districts
@@ -98,7 +98,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
-});
+// });
 
 
 //Route::post("register", [UserController::class, "register"])->name("register");
