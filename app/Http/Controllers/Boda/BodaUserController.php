@@ -67,7 +67,7 @@ class BodaUserController extends Controller
 
     public function registerBodaUser(Request $request)
     {
-        $loggedInUser = Auth::user();
+        // $loggedInUser = Auth::user();
         $this->validate($request, [
             'bodaUserName' => "required",
             "bodaUserStatus" => "0",
@@ -132,7 +132,7 @@ class BodaUserController extends Controller
                 "longitude" => $request->longitude,
                 'riderPhoto'=>$request->riderPhoto,
                 'motorcylePhoto'=>$request->motorcyclePhoto,
-                'user_id'=>$loggedInUser->adminId,
+                'user_id'=>$request->user_id,
             ]);
 
             if ($bodaUser) {
@@ -155,7 +155,7 @@ class BodaUserController extends Controller
                     "stageId" => $request->stageId,
                     "latitude" => $request->latitude,
                     "longitude" => $request->longitude,
-                    'user_id'=>$loggedInUser->adminId,
+                    'user_id'=>$request->user_id,
                     'riderPhoto'=>$request->riderPhoto,
                     'motorcylePhoto'=>$request->motorcyclePhoto,
                 ]
