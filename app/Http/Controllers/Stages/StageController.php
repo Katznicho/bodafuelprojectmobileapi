@@ -66,20 +66,20 @@ class StageController extends Controller
             'villageCode' => $request->villageCode,
             "latitude" => $request->latitude,
             "longitude" => $request->longitude,
-            'user_id' => $loggedInUser->adminId,
+            'user_id' => $request->user_id,
         ]);
 
         if ($success) {
             //get the current logged in user
             $user = auth()->user();
             //check the user total for the current user
-            $userTotal = UserTotalModel::where("user_id",$user->adminId)->first();
+            $userTotal = UserTotalModel::where("user_id",$request->user_id)->first();
                 if($userTotal){
                     $userTotal->daily_boda_stages = $userTotal->daily_boda_stages + 1;
                     $userTotal->save();
                 }else{
                     UserTotalModel::create([
-                        "user_id" => $user->adminId,
+                        "user_id" => $request->user_id,
                         "daily_boda_stages" => 1
                     ]);
                 }

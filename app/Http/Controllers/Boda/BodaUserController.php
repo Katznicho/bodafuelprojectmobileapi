@@ -163,14 +163,14 @@ class BodaUserController extends Controller
 
             if ($bodaUser) {
                  //after creating boda user check if the user is in user_totals
-
-                $userTotal = UserTotalModel::where("user_id",$loggedInUser->adminId)->first();
+                 $adminId =  $request->user_id;
+                $userTotal = UserTotalModel::where("user_id",$adminId)->first();
                 if($userTotal){
                     $userTotal->daily_boda_riders = $userTotal->daily_boda_riders + 1;
                     $userTotal->save();
                 }else{
                     UserTotalModel::create([
-                        "user_id" => $loggedInUser->adminId,
+                        "user_id" => $adminId,
                         "daily_boda_riders" => 1
                     ]);
                 }

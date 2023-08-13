@@ -37,7 +37,8 @@ class StationController extends Controller
                 //'frontIDPhoto' => 'required',
                 //'backIDPhoto' => 'required',
                 "longitude" => "required",
-                "latitude" => "required"
+                "latitude" => "required",
+                "user_id" => "required",
 
             ]
         );
@@ -95,20 +96,21 @@ class StationController extends Controller
             //"NIN" => $request->ninNumber,
             "fuelStationImageOne"=>$request->frontIDPhoto,
             "fuelStationImageTwo"=>$request->backIDPhoto,
-            "user_id" => $loggedInUser->adminId
+            "user_id" => $request->user_id,
 
         ]);
 
         if ($insert) {
-            $user = auth()->user();
+            //$user = auth()->user();
+            $adminId =  $request->user_id;
             //check the user total for the current user
-            $userTotal = UserTotalModel::where("user_id",$user->adminId)->first();
+            $userTotal = UserTotalModel::where("user_id",$adminId)->first();
                 if($userTotal){
                     $userTotal->daily_fuel_stations = $userTotal->daily_fuel_stations + 1;
                     $userTotal->save();
                 }else{
                     UserTotalModel::create([
-                        "user_id" => $user->adminId,
+                        "user_id" => $adminId,
                         "daily_fuel_stations" => 1
                     ]);
                 }
