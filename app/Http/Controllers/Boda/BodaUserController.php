@@ -225,6 +225,8 @@ class BodaUserController extends Controller
                 $chairmanId = $id + 1;
             }
 
+
+
             //update stage chairman id
                         //update stage chairman id
             StageModel::where("stageId", $request->stageId)->update(['chairmanId' => $chairmanId]);
