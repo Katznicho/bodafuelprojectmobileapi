@@ -11,32 +11,31 @@ use App\Traits\LogTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+
 
 class StageController extends Controller
 {
     use LogTrait, HelperTrait;
     //
 
-    public function getDailyBodaStages(Request $request){
-        $this->validate($request,[
+    public function getDailyBodaStages(Request $request)
+    {
+        $this->validate($request, [
             'user_id' => 'required'
         ]);
         //get the daily boda stages basing on the user id and created at is today
-        $dailyBodaStages = StageModel::where('user_id',$request->user_id)->whereDate('created_at',today())->get();
-        if($dailyBodaStages){
+        $dailyBodaStages = StageModel::where('user_id', $request->user_id)->whereDate('created_at', today())->get();
+        if ($dailyBodaStages) {
             //return the daily boda stages
             return response()->json([
-                'message'=>'success',
+                'message' => 'success',
                 'data' => $dailyBodaStages
-            ],Response::HTTP_OK);
-        }else{
+            ], Response::HTTP_OK);
+        } else {
             return response()->json([
                 'message' => 'No stages found'
-            ],Response::HTTP_NOT_FOUND);
+            ], Response::HTTP_NOT_FOUND);
         }
-
-
     }
     public function registerStage(Request $request)
     {
@@ -73,16 +72,16 @@ class StageController extends Controller
             //get the current logged in user
             $user = auth()->user();
             //check the user total for the current user
-            $userTotal = UserTotalModel::where("user_id",$request->user_id)->first();
-                if($userTotal){
-                    $userTotal->daily_boda_stages = $userTotal->daily_boda_stages + 1;
-                    $userTotal->save();
-                }else{
-                    UserTotalModel::create([
-                        "user_id" => $request->user_id,
-                        "daily_boda_stages" => 1
-                    ]);
-                }
+            $userTotal = UserTotalModel::where("user_id", $request->user_id)->first();
+            if ($userTotal) {
+                $userTotal->daily_boda_stages = $userTotal->daily_boda_stages + 1;
+                $userTotal->save();
+            } else {
+                UserTotalModel::create([
+                    "user_id" => $request->user_id,
+                    "daily_boda_stages" => 1
+                ]);
+            }
             $this->createActivityLog("Registered Stage", "Stage Registered successfully");
             return response(['message' => "success", "data" => $success, "statuCode" => Response::HTTP_OK], Response::HTTP_OK);
         } else {
@@ -98,63 +97,62 @@ class StageController extends Controller
     }
 
     //get registered stages today by  a user
-    public function getRegisteredStages(Request $request){
+    public function getRegisteredStages(Request $request)
+    {
         $validator = $this->validate($request, [
             'user_id' => 'required'
         ]);
-         $user_stages =  StageModel::where("user_id", $request->user_id)->whereDate('created_at', today())->get();
+        $user_stages =  StageModel::where("user_id", $request->user_id)->whereDate('created_at', today())->get();
 
-         if(count($user_stages)>0){
+        if (count($user_stages) > 0) {
             return response(["message" => "success", "data" => $user_stages, "statusCode" => Response::HTTP_OK], Response::HTTP_OK);
-         }
-         else{
+        } else {
             return response(["message" => "failure", "data" => []], Response::HTTP_OK);
-         }
+        }
     }
 
     //get suspended stages
-    public function getSuspendedStages(Request $request){
+    public function getSuspendedStages(Request $request)
+    {
         $validator = $this->validate($request, [
             'user_id' => 'required'
         ]);
-         $user_stages =  StageModel::where(
+        $user_stages =  StageModel::where(
             [
 
-                 ["user_id", $request->user_id],
-                 ["stageStatus", "=", 2]
+                ["user_id", $request->user_id],
+                ["stageStatus", "=", 2]
             ]
 
-            )
+        )
 
-         ->get();
+            ->get();
 
-         if(count($user_stages)>0){
+        if (count($user_stages) > 0) {
             return response(["message" => "success", "data" => $user_stages, "statusCode" => Response::HTTP_OK], Response::HTTP_OK);
-         }
-         else{
+        } else {
             return response(["message" => "failure", "data" => []], Response::HTTP_OK);
-         }
-
+        }
     }
 
     //get specific stage
-    public function getSpecificStageOnBoarded(Request $request){
+    public function getSpecificStageOnBoarded(Request $request)
+    {
         $validator = $this->validate($request, [
             'user_id' => 'required',
-            'stage_id'=>"required"
+            'stage_id' => "required"
         ]);
         $stage_details =  StageModel::where("user_id", $request->user_id)->whereDate('created_at', today())->get();
         $boda_users_today = BodaUserModel::where('stageId', $request->stage_id)->whereDate('created_at', today())->get();
-        return response(["message" => "success", "stage" => $stage_details, 'bodas'=>$boda_users_today], Response::HTTP_OK);
-
-
+        return response(["message" => "success", "stage" => $stage_details, 'bodas' => $boda_users_today], Response::HTTP_OK);
     }
 
     //
-    public function activateRegisteredStage(Request $request){
+    public function activateRegisteredStage(Request $request)
+    {
         $validator = $this->validate($request, [
             'user_id' => 'required',
-            'stage_id'=>"required"
+            'stage_id' => "required"
         ]);
 
         $oneTymPin =  $this->randomkey(5);
@@ -162,31 +160,27 @@ class StageController extends Controller
         //$allbodaUsers =  $dbAccess->select("bodauser", ["bodaUserName", "bodaUserPhoneNumber"], ["stageId" => $id]);
 
         $allbodausers =  BodaUserModel::where('stageId', $request->stage_id)->get();
-        if(count($allbodausers) >0){
-             foreach($allbodausers as $bodauser){
-                $message = "Hello " . $bodauser->bodaUserName. "Your  have been activated on CreditPlus Dail *217*212# to get started Remember your one time pin is " . $oneTymPin;
-                $res = $this->sms_faster($message , array($this->formatMobileInternational($bodauser->bodaUserPhoneNumber)), 1);
-             }
-             //update the stage
+        if (count($allbodausers) > 0) {
+            foreach ($allbodausers as $bodauser) {
+                $message = "Hello " . $bodauser->bodaUserName . "Your  have been activated on CreditPlus Dail *217*212# to get started Remember your one time pin is " . $oneTymPin;
+                $this->sendSms($message, $this->formatMobileInternational($bodauser->bodaUserPhoneNumber));
+            }
+            //update the stage
 
-             $updated_stage = StageModel::where("stageId", $request->stage_id)->update(["stageStatus" => '1']);
-             if($updated_stage){
-                  //activate bodas of this stage
-                   $updatedbodas = BodaUserModel::where('stageId', $request->stage_id)->update(['bodaUserStatus' => '1', "pin" => $hashedPin]);
-                   if($updatedbodas){
+            $updated_stage = StageModel::where("stageId", $request->stage_id)->update(["stageStatus" => '1']);
+            if ($updated_stage) {
+                //activate bodas of this stage
+                $updatedbodas = BodaUserModel::where('stageId', $request->stage_id)->update(['bodaUserStatus' => '1', "pin" => $hashedPin]);
+                if ($updatedbodas) {
                     return response(["message" => "success", "data" => 'activitation successfull'], Response::HTTP_OK);
-                   }
-                   else{
+                } else {
                     return response(["message" => "failure", "data" => 'Failed to activate boda users'], Response::HTTP_OK);
-                   }
-             }
-             else{
+                }
+            } else {
                 return response(["message" => "failure", "data" => 'Failed to activate stage'], Response::HTTP_OK);
-             }
-        }
-        else{
+            }
+        } else {
             return response(["message" => "failure", "data" => 'No boda users found'], Response::HTTP_OK);
         }
-
     }
 }
